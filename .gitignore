@@ -1,0 +1,9 @@
+*.class
+
+# General Downloaded / Config Files
+checkstyle.xml
+findbugs.xml
+
+# Week 1
+week1/InteractivePercolationVisualizer.java
+week1/PercolationVisualizer.java
