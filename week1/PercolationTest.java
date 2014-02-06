@@ -11,7 +11,7 @@ public class PercolationTest extends TestCase
   private Percolation p;
 
   @Override
-  public void setUp()
+  protected void setUp() throws Exception
   {
     size = 3;
     p = new Percolation(size);

@@ -7,7 +7,7 @@ public class Percolation
   private int width;
   private int size;
   private int[] grid;
-  private int virtualSite;
+  private int topIndex;
   private QuickFindUF unionFind;
   private boolean percolates;
 
@@ -16,9 +16,10 @@ public class Percolation
     // Set up the grid construct
     width = N;
     size = width * width;
+    // TODO Try to get rid of this
     grid = new int[size + 1];
     grid[size] = 1;
-    virtualSite = size;
+    topIndex = size;
     unionFind = new QuickFindUF(size + 1);
   }
 
@@ -34,7 +35,7 @@ public class Percolation
 
   public boolean isFull(int row, int col)
   {
-    return unionFind.connected(indexFromRowCol(row, col), virtualSite);
+    return unionFind.connected(indexFromRowCol(row, col), topIndex);
   }
 
   public void open(int row, int col)
@@ -49,34 +50,34 @@ public class Percolation
 
     // union to top virtual site if in the top row
     if (index < width) {
-      joinSite(index, virtualSite);
+      joinSite(index, topIndex);
     }
 
     // union to top if top is open
     int top = index - width;
-    if (top >= 0 && isIndexOpen(top)) {
+    if (top >= 0) {
       joinSite(index, top);
     }
 
     // union to below if below is open
     int below = index + width;
-    if (below < size && isIndexOpen(below)) {
+    if (below < size) {
       joinSite(index, below);
     }
 
     // union to right if right is open
     int right = index + 1;
-    if (right % width != 0 && isIndexOpen(right)) {
+    if (right % width != 0) {
       joinSite(index, right);
     }
 
     // union to left if left is open
     int left = index - 1;
-    if (index % width != 0 && isIndexOpen(left)) {
+    if (index % width != 0) {
       joinSite(index, left);
     }
 
-    if (isConnectedToBottom(index) && unionFind.connected(index, virtualSite)) {
+    if (isConnectedToBottom(index) && unionFind.connected(index, topIndex)) {
       percolates = true;
     }
 
