@@ -2,25 +2,89 @@ public class Percolation
 {
 
   private static final int OPEN_FLAG = 1;
-  private static final int CONNECTED_TO_BOTTOM_FLAG = 2;
+  private static final int BOTTOM_FLAG = 2;
 
+  private int[] sites;
   private int width;
   private int size;
-  private int[] grid;
-  private int topIndex;
-  private QuickFindUF unionFind;
+  private WeightedQuickUnionUF unionFind;
   private boolean percolates;
 
   public Percolation(int N)
   {
-    // Set up the grid construct
     width = N;
     size = width * width;
-    // TODO Try to get rid of this
-    grid = new int[size + 1];
-    grid[size] = 1;
-    topIndex = size;
-    unionFind = new QuickFindUF(size + 1);
+    sites = new int[size];
+    unionFind = new WeightedQuickUnionUF(size + 1);
+  }
+
+  public void open(int i, int j)
+  {
+    int siteIndex = toIndex(i, j);
+    sites[siteIndex] = OPEN_FLAG;
+
+    // union to top virtual site if in the top row
+    if (siteIndex < width) {
+      connectSites(siteIndex, virtualSiteIndex());
+    }
+
+    // update the nodes if the site is in the bottom row
+    if (siteIndex >= size - width) {
+      connectToBottom(siteIndex);
+    }
+
+    // try and connect to a above neighbor
+    int above = siteIndex - width;
+    if (above >= 0 && siteOpen(above)) {
+      connectSites(siteIndex, above);
+      if (connectedToBottom(above) || connectedToBottom(siteIndex)) {
+        connectToBottom(above);
+      }
+    }
+
+    // try and connect to a below neighbor
+    int below = siteIndex + width;
+    if (below < size && siteOpen(below)) {
+      connectSites(siteIndex, below);
+      if (connectedToBottom(below) || connectedToBottom(siteIndex)) {
+        connectToBottom(siteIndex);
+      }
+    }
+
+    // try and connect to a left neighbor
+    int left = siteIndex - 1;
+    if (siteIndex % width != 0 && siteOpen(left)) {
+      connectSites(siteIndex, left);
+      if (connectedToBottom(left) || connectedToBottom(siteIndex)) {
+        connectToBottom(siteIndex);
+      }
+    }
+
+    // try and connect to a right neighbor
+    int right = siteIndex + 1;
+    if (right % width != 0 && siteOpen(right)) {
+      connectSites(siteIndex, right);
+      if (connectedToBottom(right) || connectedToBottom(siteIndex)) {
+        connectToBottom(siteIndex);
+      }
+    }
+
+    // if the site is now connected to the bottom and to the top, percolate!
+    if (connectedToBottom(siteIndex) && connectedToTop(siteIndex)) {
+      percolates = true;
+    }
+
+  }
+
+  public boolean isOpen(int i, int j)
+  {
+    return siteOpen(toIndex(i, j));
+  }
+
+  public boolean isFull(int i, int j)
+  {
+    return connectedToTop(toIndex(i, j));
+    // return connectedToBottom(toIndex(i, j));
   }
 
   public boolean percolates()
@@ -28,72 +92,18 @@ public class Percolation
     return percolates;
   }
 
-  public boolean isOpen(int row, int col)
+  // TODO remove when finished
+  public boolean connectedToBottom(int i, int j)
   {
-    return isIndexOpen(indexFromRowCol(row, col));
+    return connectedToBottom(toIndex(i, j));
   }
 
-  public boolean isFull(int row, int col)
+  private boolean connectedToTop(int siteIndex)
   {
-    return unionFind.connected(indexFromRowCol(row, col), topIndex);
+    return unionFind.connected(siteIndex, virtualSiteIndex());
   }
 
-  public void open(int row, int col)
-  {
-    int index = indexFromRowCol(row, col);
-    grid[index] = OPEN_FLAG;
-
-    // union to the bottom virtual site if in the bottom row
-    if (index >= size - width) {
-      connectToBottom(index);
-    }
-
-    // union to top virtual site if in the top row
-    if (index < width) {
-      joinSite(index, topIndex);
-    }
-
-    // union to top if top is open
-    int top = index - width;
-    if (top >= 0) {
-      joinSite(index, top);
-    }
-
-    // union to below if below is open
-    int below = index + width;
-    if (below < size) {
-      joinSite(index, below);
-    }
-
-    // union to right if right is open
-    int right = index + 1;
-    if (right % width != 0) {
-      joinSite(index, right);
-    }
-
-    // union to left if left is open
-    int left = index - 1;
-    if (index % width != 0) {
-      joinSite(index, left);
-    }
-
-    if (isConnectedToBottom(index) && unionFind.connected(index, topIndex)) {
-      percolates = true;
-    }
-
-  }
-
-  private void connectToBottom(int index)
-  {
-    grid[index] = CONNECTED_TO_BOTTOM_FLAG;
-  }
-
-  private boolean isConnectedToBottom(int index)
-  {
-    return grid[index] == CONNECTED_TO_BOTTOM_FLAG;
-  }
-
-  private int indexFromRowCol(int row, int col)
+  private int toIndex(int row, int col)
   {
     int index = width * (row - 1) + (col - 1);
     if (index < 0 || index >= size) {
@@ -102,21 +112,34 @@ public class Percolation
     return index;
   }
 
-  private boolean isIndexOpen(int index)
+  private int virtualSiteIndex()
   {
-    return grid[index] > 0;
+    return size;
   }
 
-  private void joinSite(int siteIndex, int neighborIndex)
+  private void connectSites(int siteIndex, int neighborIndex)
   {
-    if (isIndexOpen(neighborIndex)) {
-      unionFind.union(siteIndex, neighborIndex);
+    unionFind.union(siteIndex, neighborIndex);
+  }
 
-      if (isConnectedToBottom(siteIndex) || isConnectedToBottom(neighborIndex)) {
-        connectToBottom(siteIndex);
-        connectToBottom(unionFind.find(siteIndex));
-      }
-    }
+  private void connectToBottom(int siteIndex)
+  {
+    sites[siteIndex] = BOTTOM_FLAG;
+    sites[unionFind.find(siteIndex)] = BOTTOM_FLAG;
+  }
+
+  private boolean connectedToBottom(int siteIndex)
+  {
+    boolean siteIsOpen = siteOpen(siteIndex);
+    int siteRoot = unionFind.find(siteIndex);
+
+    return siteIsOpen
+        && (sites[siteRoot] == BOTTOM_FLAG || sites[siteIndex] == BOTTOM_FLAG);
+  }
+
+  private boolean siteOpen(int siteIndex)
+  {
+    return sites[siteIndex] > 0;
   }
 
 }
