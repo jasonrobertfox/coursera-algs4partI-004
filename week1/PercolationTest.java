@@ -1,14 +1,10 @@
 import junit.framework.TestCase;
 
-/**
- * A JUnit test case class. Every method starting with the word "test" will be
- * called when running the test with JUnit.
- */
 public class PercolationTest extends TestCase
 {
 
-  private int size;
   private Percolation p;
+  private int size;
 
   @Override
   protected void setUp() throws Exception
@@ -33,9 +29,19 @@ public class PercolationTest extends TestCase
 
   public void testCanOpenASite()
   {
-    assertFalse(p.isOpen(2, 2));
+    assertNotOpen(2, 2);
     p.open(2, 2);
-    assertTrue(p.isOpen(2, 2));
+    assertOpen(2, 2);
+  }
+
+  public void testHandleExceptionForFirstOpenOutOfBound()
+  {
+    try {
+      p.open(4, 0);
+      fail("Expected IndexOutOfBoundsException");
+    } catch (IndexOutOfBoundsException e) {
+      assertTrue(e instanceof IndexOutOfBoundsException);
+    }
   }
 
   public void testNotFullByDefault()
@@ -43,52 +49,110 @@ public class PercolationTest extends TestCase
     assertNotFull(1, 1);
   }
 
-  public void testHandleExceptionForFirstOpenOutOfBound()
+  public void testNotPercolatesByDefault()
   {
-    try {
-      p.open(4, 2);
-      fail("Expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException e) {
-      assertTrue(e instanceof IndexOutOfBoundsException);
-    }
+    assertNotPercolates();
   }
 
-  public void testOpenTopSiteIsFull()
+  // Throw away
+  // public void testIsNotConnectedToBottomByDefault()
+  // {
+  // assertNotConnectedToBottom(1, 1);
+  // }
+
+  public void testPercolatesOnSingleSiteGrid()
   {
+    p = new Percolation(1);
     p.open(1, 1);
-    assertTrue(p.isOpen(1, 1));
+    assertOpen(1, 1);
     assertFull(1, 1);
+    // assertConnectedToBottom(1, 1);
+    assertPercolates();
   }
 
-  public void testOpenBottomSiteIsNotFull()
+  public void testSingleTopSite()
   {
-    p.open(3, 1);
-    assertNotFull(1, 1);
+    p = new Percolation(2);
+    p.open(1, 1);
+    // assertNotConnectedToBottom(1, 1);
+    assertNotPercolates();
+    // assertNotConnectedToBottom(2, 1);
   }
 
-  public void testPercolatesOnSmallGrid()
+  public void testSingleBottomSite()
   {
-    Percolation ptest = new Percolation(1);
-    ptest.open(1, 1);
-    assertTrue(ptest.isOpen(1, 1));
-    assertTrue(ptest.isFull(1, 1));
-    assertTrue(ptest.percolates());
+    p = new Percolation(2);
+    p.open(2, 1);
+    // assertConnectedToBottom(2, 1);
+    assertNotPercolates();
   }
 
-  public void testTwoConnectedSitesAreFull()
+  public void testTopThenBottomConnection()
   {
+    p = new Percolation(2);
+    p.open(1, 1);
+    p.open(2, 1);
+    assertPercolates();
+    assertFull(2, 1);
+    // assertConnectedToBottom(2, 1);
+    // assertConnectedToBottom(1, 1);
+  }
+
+  public void testBottomThenTopConnection()
+  {
+    p = new Percolation(2);
     p.open(2, 1);
     p.open(1, 1);
+    assertPercolates();
     assertFull(2, 1);
+    // assertConnectedToBottom(2, 1);
+    // assertConnectedToBottom(1, 1);
   }
 
-  public void testConnectingUpFromBottomRow()
+  public void testEverythingBecomesConnectedToBottom()
   {
-    Percolation ptest = new Percolation(2);
-    ptest.open(1, 1);
-    ptest.open(2, 1);
-    assertTrue(ptest.isFull(2, 1));
-    assertTrue(ptest.percolates());
+    p = new Percolation(6);
+    p.open(6, 2);
+    p.open(5, 2);
+    p.open(2, 2);
+    p.open(3, 2);
+    // assertConnectedToBottom(5, 2);
+    p.open(4, 2);
+    // assertConnectedToBottom(2, 2);
+  }
+
+  public void testBackWashDoesNotOccur()
+  {
+    p.open(1, 1);
+    p.open(3, 1);
+    p.open(3, 3);
+    p.open(2, 1);
+    assertPercolates();
+    assertNotFull(3, 3);
+  }
+
+  public void testLeftConnection()
+  {
+    p.open(2, 1);
+    p.open(3, 1);
+    // assertConnectedToBottom(2, 1);
+    p.open(2, 2);
+    // assertConnectedToBottom(2, 2);
+    p.open(1, 2);
+    // assertConnectedToBottom(1, 2);
+    assertPercolates();
+  }
+
+  public void testRightConnection()
+  {
+    p.open(2, 3);
+    p.open(3, 3);
+    // assertConnectedToBottom(2, 3);
+    p.open(2, 2);
+    // assertConnectedToBottom(2, 2);
+    p.open(1, 2);
+    // assertConnectedToBottom(1, 2);
+    assertPercolates();
   }
 
   public void testMiddleTopAndBottomConnecting()
@@ -97,30 +161,6 @@ public class PercolationTest extends TestCase
     p.open(3, 1);
     p.open(2, 1);
     assertFull(3, 1);
-    assertPercolates();
-  }
-
-  public void testRightConnecting()
-  {
-    p.open(1, 2);
-    p.open(2, 2);
-    p.open(3, 1);
-    assertNotPercolates();
-    assertNotFull(3, 1);
-    p.open(2, 1);
-    assertFull(2, 1);
-    assertPercolates();
-  }
-
-  public void testLeftConnecting()
-  {
-    p.open(1, 2);
-    p.open(2, 2);
-    p.open(3, 3);
-    assertNotPercolates();
-    assertNotFull(3, 3);
-    p.open(2, 3);
-    assertFull(2, 3);
     assertPercolates();
   }
 
@@ -136,35 +176,30 @@ public class PercolationTest extends TestCase
 
   public void testComplicatedPercolation()
   {
-    Percolation ptest = new Percolation(5);
-    int[][] steps = { { 1, 5 }, { 2, 4 }, { 2, 5 }, { 5, 2 }, { 4, 3 },
-        { 4, 2 }, { 2, 2 }, { 3, 4 }, { 3, 3 } };
-    for (int[] step : steps) {
-      ptest.open(step[0], step[1]);
-    }
-    assertTrue(ptest.percolates());
-  }
-
-  public void testThatNoBackwashHappens()
-  {
-    p.open(1, 1);
-    p.open(2, 1);
+    p = new Percolation(5);
+    p.open(1, 5);
+    p.open(2, 4);
+    p.open(2, 5);
+    p.open(5, 2);
+    p.open(4, 3);
+    p.open(4, 2);
+    p.open(2, 2);
+    p.open(3, 4);
     p.open(3, 3);
-    assertNotPercolates();
-    assertNotFull(3, 3);
-    p.open(3, 1);
     assertPercolates();
-    assertNotFull(3, 3);
   }
 
-  private void assertPercolates()
+  // Helper methods
+  // ////////////////////////////////////////////////////////////////////////////////
+
+  private void assertOpen(int row, int col)
   {
-    assertTrue(p.percolates());
+    assertTrue(p.isOpen(row, col));
   }
 
-  private void assertNotPercolates()
+  private void assertNotOpen(int row, int col)
   {
-    assertFalse(p.percolates());
+    assertFalse(p.isOpen(row, col));
   }
 
   private void assertNotFull(int row, int col)
@@ -176,4 +211,27 @@ public class PercolationTest extends TestCase
   {
     assertTrue(p.isFull(row, col));
   }
+
+  private void assertNotPercolates()
+  {
+    assertFalse(p.percolates());
+  }
+
+  private void assertPercolates()
+  {
+    assertTrue(p.percolates());
+  }
+
+  // // Throw away
+  // private void assertNotConnectedToBottom(int i, int j)
+  // {
+  // assertFalse(p.connectedToBottom(i, j));
+  // }
+  //
+  // // Throw away
+  // private void assertConnectedToBottom(int i, int j)
+  // {
+  // assertTrue(p.connectedToBottom(i, j));
+  // }
+
 }

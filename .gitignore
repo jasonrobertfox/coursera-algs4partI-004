@@ -1,4 +1,5 @@
 *.class
+*.zip
 
 # General Downloaded / Config Files
 checkstyle.xml

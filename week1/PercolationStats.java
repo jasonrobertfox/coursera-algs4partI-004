@@ -1,6 +1,5 @@
 public class PercolationStats
 {
-
   private double[] results;
   private double mean;
   private double stddev;
@@ -14,10 +13,31 @@ public class PercolationStats
     }
     this.T = T;
     this.N = N;
-    results = new double[1];
-    results[0] = 1.0;
+    results = new double[T];
+    int totalSites = N * N;
+    runPercolation(totalSites);
     mean = StdStats.mean(results);
     stddev = StdStats.stddev(results);
+  }
+
+  private void runPercolation(int totalSites)
+  {
+    for (int i = 0; i < T; i++) {
+      // Create a new percolation and set the open sites counter to zero
+      Percolation p = new Percolation(N);
+      int openSites = 0;
+
+      while (!p.percolates()) {
+        int row = StdRandom.uniform(N) + 1;
+        int col = StdRandom.uniform(N) + 1;
+        if (!p.isOpen(row, col)) {
+          p.open(row, col);
+          openSites++;
+        }
+      }
+      // Add the ratio of open sites to total sites to the results
+      results[i] = (double) openSites / (double) totalSites;
+    }
   }
 
   public double mean()
@@ -46,14 +66,11 @@ public class PercolationStats
     int N = Integer.parseInt(args[0]);
     int T = Integer.parseInt(args[1]);
 
-    double mean = 0.5929934999999997;
-    double stddev = 0.00876990421552567;
-    double conLo = 0.5912745987737567;
-    double conHi = 0.5947124012262428;
-
-    StdOut.println("mean                     " + mean);
-    StdOut.println("stddev                   " + stddev);
-    StdOut.println("95% confidence interval  " + conLo + ", " + conHi);
+    PercolationStats stats = new PercolationStats(N, T);
+    StdOut.println("mean                     " + stats.mean());
+    StdOut.println("stddev                   " + stats.stddev());
+    StdOut.println("95% confidence interval  " + stats.confidenceLo() + ", "
+        + stats.confidenceHi());
   }
 
   private double confidence95()

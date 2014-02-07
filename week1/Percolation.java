@@ -35,38 +35,26 @@ public class Percolation
 
     // try and connect to a above neighbor
     int above = siteIndex - width;
-    if (above >= 0 && siteOpen(above)) {
-      connectSites(siteIndex, above);
-      if (connectedToBottom(above) || connectedToBottom(siteIndex)) {
-        connectToBottom(above);
-      }
+    if (above >= 0) {
+      connectNeighbor(siteIndex, above);
     }
 
     // try and connect to a below neighbor
     int below = siteIndex + width;
-    if (below < size && siteOpen(below)) {
-      connectSites(siteIndex, below);
-      if (connectedToBottom(below) || connectedToBottom(siteIndex)) {
-        connectToBottom(siteIndex);
-      }
+    if (below < size) {
+      connectNeighbor(siteIndex, below);
     }
 
     // try and connect to a left neighbor
     int left = siteIndex - 1;
-    if (siteIndex % width != 0 && siteOpen(left)) {
-      connectSites(siteIndex, left);
-      if (connectedToBottom(left) || connectedToBottom(siteIndex)) {
-        connectToBottom(siteIndex);
-      }
+    if (siteIndex % width != 0) {
+      connectNeighbor(siteIndex, left);
     }
 
     // try and connect to a right neighbor
     int right = siteIndex + 1;
-    if (right % width != 0 && siteOpen(right)) {
-      connectSites(siteIndex, right);
-      if (connectedToBottom(right) || connectedToBottom(siteIndex)) {
-        connectToBottom(siteIndex);
-      }
+    if (right % width != 0) {
+      connectNeighbor(siteIndex, right);
     }
 
     // if the site is now connected to the bottom and to the top, percolate!
@@ -84,18 +72,11 @@ public class Percolation
   public boolean isFull(int i, int j)
   {
     return connectedToTop(toIndex(i, j));
-    // return connectedToBottom(toIndex(i, j));
   }
 
   public boolean percolates()
   {
     return percolates;
-  }
-
-  // TODO remove when finished
-  public boolean connectedToBottom(int i, int j)
-  {
-    return connectedToBottom(toIndex(i, j));
   }
 
   private boolean connectedToTop(int siteIndex)
@@ -105,10 +86,10 @@ public class Percolation
 
   private int toIndex(int row, int col)
   {
-    int index = width * (row - 1) + (col - 1);
-    if (index < 0 || index >= size) {
+    if (row <= 0 || col <= 0 || row > width || col > width) {
       throw new IndexOutOfBoundsException("Coordinate out of bounds.");
     }
+    int index = width * (row - 1) + (col - 1);
     return index;
   }
 
@@ -130,16 +111,24 @@ public class Percolation
 
   private boolean connectedToBottom(int siteIndex)
   {
-    boolean siteIsOpen = siteOpen(siteIndex);
-    int siteRoot = unionFind.find(siteIndex);
-
-    return siteIsOpen
-        && (sites[siteRoot] == BOTTOM_FLAG || sites[siteIndex] == BOTTOM_FLAG);
+    return sites[unionFind.find(siteIndex)] == BOTTOM_FLAG
+        || sites[siteIndex] == BOTTOM_FLAG;
   }
 
   private boolean siteOpen(int siteIndex)
   {
     return sites[siteIndex] > 0;
+  }
+
+  private void connectNeighbor(int siteIndex, int neighborIndex)
+  {
+    if (siteOpen(neighborIndex)) {
+      connectSites(siteIndex, neighborIndex);
+      if (connectedToBottom(neighborIndex) || connectedToBottom(siteIndex)) {
+        connectToBottom(neighborIndex);
+        connectToBottom(siteIndex);
+      }
+    }
   }
 
 }
