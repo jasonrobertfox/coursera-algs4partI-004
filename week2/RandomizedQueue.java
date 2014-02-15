@@ -6,7 +6,6 @@ public class RandomizedQueue<Item> implements Iterable<Item>
 
   private int size = 0;
   private Item[] queue;
-  private int first = 0;
   private int last = 0;
   private int fillable = 1;
 
