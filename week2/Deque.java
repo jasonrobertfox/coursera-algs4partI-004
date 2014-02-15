@@ -41,6 +41,8 @@ public class Deque<Item> implements Iterable<Item>
     first.next = oldFirst;
     if (oldFirst == null) {
       last = newFirst;
+    } else {
+      oldFirst.prev = newFirst;
     }
     size++;
   }
@@ -55,6 +57,8 @@ public class Deque<Item> implements Iterable<Item>
     last.prev = oldLast;
     if (oldLast == null) {
       first = newLast;
+    } else {
+      oldLast.next = newLast;
     }
     size++;
   }
@@ -64,6 +68,9 @@ public class Deque<Item> implements Iterable<Item>
     validateRemove();
     Item item = first.item;
     first = first.next;
+    if (first != null) {
+      first.prev = null;
+    }
     size--;
     return item;
   }
@@ -73,6 +80,9 @@ public class Deque<Item> implements Iterable<Item>
     validateRemove();
     Item item = last.item;
     last = last.prev;
+    if (last != null) {
+      last.next = null;
+    }
     size--;
     return item;
   }

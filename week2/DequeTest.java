@@ -148,4 +148,24 @@ public class DequeTest extends TestCase
     }
   }
 
+  public void testEmptyOscillation()
+  {
+    d.addFirst("a");
+    d.addLast("b");
+    d.removeFirst();
+    d.removeLast();
+    d.addLast("c");
+    assertEquals("c", d.removeFirst());
+  }
+
+  public void testEmptyOscillationReverse()
+  {
+    d.addLast("a");
+    d.addFirst("b");
+    d.removeLast();
+    d.removeFirst();
+    d.addFirst("c");
+    assertEquals("c", d.removeLast());
+  }
+
 }
