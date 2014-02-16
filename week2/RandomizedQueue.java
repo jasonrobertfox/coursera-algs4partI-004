@@ -65,24 +65,25 @@ public class RandomizedQueue<Item> implements Iterable<Item>
   private class ArrayIterator implements Iterator<Item>
   {
     private Item[] iteratorQueue;
-    private int iteratorSize;
+    private int nextPointer;
 
     public ArrayIterator()
     {
+      nextPointer = size - 1;
       iteratorQueue = (Item[]) new Object[size];
-      iteratorSize = size;
       int j = 0;
-      for (int i = 0; i < queue.length; i++) {
+      for (int i = 0; i < last; i++) {
         if (queue[i] != null) {
           iteratorQueue[j++] = queue[i];
         }
       }
+      StdRandom.shuffle(iteratorQueue);
     }
 
     @Override
     public boolean hasNext()
     {
-      return iteratorSize != 0;
+      return nextPointer >= 0;
     }
 
     @Override
@@ -97,13 +98,8 @@ public class RandomizedQueue<Item> implements Iterable<Item>
       if (!hasNext()) {
         throw new NoSuchElementException();
       }
-      int choice = StdRandom.uniform(iteratorSize);
-      while (iteratorQueue[choice] == null) {
-        choice++;
-      }
-      Item item = iteratorQueue[choice];
-      iteratorQueue[choice] = null;
-      iteratorSize--;
+      Item item = iteratorQueue[nextPointer];
+      iteratorQueue[nextPointer--] = null;
       return item;
     }
   }
@@ -118,7 +114,7 @@ public class RandomizedQueue<Item> implements Iterable<Item>
     }
     Item[] temp = (Item[]) new Object[newSize];
     int n = 0;
-    for (int i = 0; i < queue.length; i++) {
+    for (int i = 0; i < last; i++) {
       if (queue[i] != null) {
         temp[n++] = queue[i];
       }
@@ -129,9 +125,13 @@ public class RandomizedQueue<Item> implements Iterable<Item>
 
   private int getRandomChoiceIndex()
   {
-    int choice = StdRandom.uniform(size);
+    int choice = StdRandom.uniform(last);
     while (queue[choice] == null) {
-      choice++;
+      if (choice == queue.length - 1) {
+        choice = 0;
+      } else {
+        choice++;
+      }
     }
     return choice;
   }
