@@ -67,10 +67,15 @@ public class Deque<Item> implements Iterable<Item>
   {
     validateRemove();
     Item item = first.item;
-    first = first.next;
-    if (first != null) {
+
+    if (first.next != null) {
+      first = first.next;
       first.prev = null;
+    } else {
+      first = null;
+      last = null;
     }
+
     size--;
     return item;
   }
@@ -79,9 +84,13 @@ public class Deque<Item> implements Iterable<Item>
   {
     validateRemove();
     Item item = last.item;
-    last = last.prev;
-    if (last != null) {
+
+    if (last.prev != null) {
+      last = last.prev;
       last.next = null;
+    } else {
+      first = null;
+      last = null;
     }
     size--;
     return item;

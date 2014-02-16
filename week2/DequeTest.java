@@ -168,4 +168,41 @@ public class DequeTest extends TestCase
     assertEquals("c", d.removeLast());
   }
 
+  public void testAddFirstRemoveLast()
+  {
+    try {
+      d.addFirst("a");
+      d.addFirst("b");
+      d.addFirst("c");
+      d.removeLast();
+      d.removeLast();
+      d.removeLast();
+      d.removeLast();
+      d.removeLast();
+      fail("Expected NoSuchElementException");
+    } catch (NoSuchElementException e) {
+      d.addFirst("b");
+    }
+    assertEquals(1, d.size());
+    assertEquals("b", d.removeLast());
+  }
+
+  public void testAddLastRemoveFirst()
+  {
+    try {
+      d.addLast("a");
+      d.addLast("b");
+      d.addLast("c");
+      d.removeFirst();
+      d.removeFirst();
+      d.removeFirst();
+      d.removeFirst();
+      d.removeFirst();
+      fail("Expected NoSuchElementException");
+    } catch (NoSuchElementException e) {
+      d.addLast("b");
+    }
+    assertEquals(1, d.size());
+    assertEquals("b", d.removeFirst());
+  }
 }

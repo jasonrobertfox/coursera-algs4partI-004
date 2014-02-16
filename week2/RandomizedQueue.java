@@ -30,7 +30,7 @@ public class RandomizedQueue<Item> implements Iterable<Item>
       throw new NullPointerException("Can not add a null item.");
     }
     if (fillable == 0) {
-      doubleQueue();
+      adjustQueue();
     }
     queue[last++] = item;
     fillable--;
@@ -44,11 +44,9 @@ public class RandomizedQueue<Item> implements Iterable<Item>
     Item item = queue[choice];
     queue[choice] = null;
     size--;
-
     if (size > 0 && size == queue.length / 4) {
-      halfQueue();
+      adjustQueue();
     }
-
     return item;
   }
 
@@ -110,25 +108,13 @@ public class RandomizedQueue<Item> implements Iterable<Item>
     }
   }
 
-  private void halfQueue()
-  {
-    Item[] temp = (Item[]) new Object[queue.length / 2];
-    int n = 0;
-    for (int i = 0; i < queue.length; i++) {
-      if (queue[i] != null) {
-        temp[n++] = queue[i];
-      }
-    }
-    queue = temp;
-    last = size;
-    fillable = size;
-  }
-
-  private void doubleQueue()
+  private void adjustQueue()
   {
     int newSize = 1;
+    fillable = 1;
     if (size != 0) {
       newSize = 2 * size;
+      fillable = size;
     }
     Item[] temp = (Item[]) new Object[newSize];
     int n = 0;
@@ -139,7 +125,6 @@ public class RandomizedQueue<Item> implements Iterable<Item>
     }
     queue = temp;
     last = size;
-    fillable = size;
   }
 
   private int getRandomChoiceIndex()

@@ -99,7 +99,7 @@ public class RandomizedQueueTest extends TestCase
 
     double sampleCount = 0;
     for (double i = 0; i < 10000; i++) {
-      if (q.sample() == 1) {
+      if (q.sample() == 9) {
         sampleCount++;
       }
     }
@@ -154,7 +154,7 @@ public class RandomizedQueueTest extends TestCase
 
     for (double i = 0; i < 10000; i++) {
       for (int s : q) {
-        if (s == 1) {
+        if (s == 9) {
           sampleCount++;
         }
         break;
@@ -177,5 +177,19 @@ public class RandomizedQueueTest extends TestCase
     }
 
     assertEquals(55, sum);
+  }
+
+  public void testEnqueueDequeue()
+  {
+    try {
+      rq.enqueue("a");
+      rq.dequeue();
+      rq.dequeue();
+    } catch (NoSuchElementException e) {
+      rq.enqueue("c");
+      rq.dequeue();
+      rq.enqueue("b");
+      assertEquals("b", rq.dequeue());
+    }
   }
 }
